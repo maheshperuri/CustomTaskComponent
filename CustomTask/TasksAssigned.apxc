@@ -1,0 +1,99 @@
+/**
+ *@Class Name - TasksAssigned
+ *@Created on: 25/05/2019
+ *@Modified on:
+ *@Modified Reason:
+ *@description - This class is used for Tasks.
+ */
+public without sharing class TasksAssigned{
+    /**
+    * @description Method to getTaskList
+    * @return taskList
+    */
+    @AuraEnabled
+    public static List<Task> getTaskList(){
+        Id userId= UserInfo.getUserId();
+        system.debug('userId'+userId);
+        
+        List<Task> taskList = [Select Id, Subject, ActivityDate, Status, who.id, who.type, who.Name, What.Name, What.Id
+                               From Task
+                               Where OwnerId = :userId and (Status= 'New' or Status= 'Open')
+                              ];  
+        system.debug('taskList'+taskList);
+        return taskList;
+    }  
+    
+    /**
+    * @description Method to closeTasks
+    * @return getTaskList
+    * @param taskId
+    */
+    @AuraEnabled
+    public static List<Task> closeTasks(String taskId){
+        Task tsk = new Task(Id= taskId, Status= 'Completed');
+        update tsk;
+        return getTaskList();
+    }
+    
+    /*@AuraEnabled
+    public static void closeTasks(String taskId){
+        Task tsk = [Select Id, Status From Task where Id=:taskId];
+        tsk.Status = 'Completed';
+        system.debug('task'+tsk);
+        update tsk;
+        system.debug('task'+tsk);
+        //if we want to return success/ error , need to do it from here
+    }*/
+    
+    /**
+    * @description Method to getStatus
+    * @return options
+    */
+    @AuraEnabled
+    public static List<String> getStatus(){
+        List<String> options = new List<String>();
+        Schema.DescribeFieldResult fieldResult = Task.Status.getDescribe();
+        List<Schema.PicklistEntry> ple = fieldResult.getPicklistValues();
+        for( Schema.PicklistEntry f : ple)
+        {
+            options.add(f.getLabel());
+        }     
+        return options;
+    }
+    /**
+    * @description Method to getListViews
+    * @return listviews
+    */
+    @AuraEnabled
+    public static List<ListView> getListViews() {
+        List<ListView> listviews =
+            [SELECT Id, Name FROM ListView WHERE SobjectType = 'Task'];
+        
+        // Perform isAccessible() check here
+        return listviews;
+    }
+    /**
+    * @description Method to fetchTasks
+    * @return taskList
+    * @param sortField
+    * @param isAsc
+    */
+    @AuraEnabled
+    public static list <Task> fetchTasks(String sortField, boolean isAsc) {
+        Id userId = UserInfo.getUserId();
+        User loggedInUser = [Select Id, Email, ProfileId From User Where Id = :userId];
+        
+        List<Task> taskList = [Select Id, Subject, ActivityDate, Status
+                               From Task
+                               Where OwnerId = :userId Limit 10
+                              ];   
+        
+        String statusCompleted = 'Completed';
+        String subType = 'Follow Up';
+        
+        
+        String sSoql = 'SELECT Id, Subject, ActivityDate, Status , WhoId, WhatId, Who.Name, What.Name    ';
+        sSoql += 'From Task Where OwnerId = :userId And Status != \'' +String.escapeSingleQuotes(statusCompleted);
+        return taskList;        
+    }      
+}

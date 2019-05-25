@@ -1,0 +1,72 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,forceCommunity:availableForAllPageTypes"
+                controller="TasksAssigned">
+    <aura:attribute name="taskList" type="List"/>
+    <aura:attribute name="taskStatusList" type="List"/>
+    <aura:attribute name="selectStatus" type="String"/>
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="task" type="Task"/>    
+    <aura:attribute name="arrowDirection" type="string" default="arrowup" description="Use for change arrow sign direction on header based on click"/>
+    <aura:attribute name="isAsc" type="boolean" default="true" description="boolean flag for pass sorting condition to apex class"/>
+    <aura:attribute name="selectedTabsoft" type="string" default="DueDate" description="Use for show/hide arraow sign on header based on conditions"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:dependency resource="markup://force:navigateToSObject" type="EVENT"/>
+    <aura:handler event="force:navigateToSObject" action="{!c.navigateToRecord}"/>
+
+    <lightning:card title="Tasks Due">
+        
+        <table style="width: 100%; table-layout:fixed;" class="slds-table slds-table_bordered slds-table_cell-buffer slds-max-medium-table_stacked-horizontal slds-cell-wrap">
+            <thead>
+                <tr class="slds-text-heading--label">
+                    <th class="" style = "width: 30%;" scope="col">Subject</th>
+                    <th class="" style = "width: 15%;" scope="col" ></th>
+                    <th class="" style = "width: 20%;" scope="col">Name </th>
+                    <th class="" style = "width: 20%;" scope="col">Related To </th>  
+                    <th class="" style = "width: 20%;" scope="col">Close Activity </th>  
+                </tr>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.taskList}" var="task" indexVar="index">
+                    <tr class="slds-hint-parent slds-cell-wrap">
+                        <td data-label="Subject" class="slds-cell-wrap" >
+                            <a onclick="{!c.navigateToRecord}" style="width:100%;" data-index="{!task.Id}">{!task.Subject}</a>
+                        </td>
+                        <td data-label="Due Date" class="slds-cell-wrap" >  
+                            <ui:outputDate value="{!task.ActivityDate}" format="MM/dd/YYYY"></ui:outputDate>                           
+                        </td> 
+                        <td data-label="Name" class="slds-cell-wrap" >
+                            <a onclick="{!c.navigateToName}" style="width:100%;" data-index="{!task.WhoId}">{!task.Who.Name}</a>
+                        </td>
+                        <td data-label="Related to" class="slds-cell-wrap" >
+                            <a onclick="{!c.navigateToRelatedTo}" style="width:100%;" data-index="{!task.WhatId}">{!task.What.Name}</a>
+                        </td>
+                        <td class="slds-cell-wrap" data-taskId="{!task.Id}">
+                            <div class="slds-dropdown-trigger">  
+                                <button class="slds-button slds-button--icon-border-filled">
+                                    <lightning:icon iconName="utility:switch" alternativeText="Close" />
+                                    <span class="slds-assistive-text">Switch</span>
+                                </button>
+                                <div class="slds-dropdown slds-dropdown--right slds-nubbin--top-right slds-dropdown--menu">
+                                    <ul class="slds-dropdown__list" role="menu">
+                                        <li id="menu-0-0" class="slds-dropdown__item">
+                                            <a onclick="{!c.closeTask}" role="menuitem" data-index="{!task.Id}">
+                                                <p class="slds-truncate">Close</p>
+                                            </a>
+                                        </li>                                    
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+        <aura:if isTrue="{!v.taskList.length >= 5}">
+            <table style="width: 100%; table-layout:fixed;" class="slds-table slds-table_bordered slds-table_cell-buffer slds-max-medium-table_stacked-horizontal slds-cell-wrap">
+                <th class="" scope="col"></th>
+                <td data-label="View All" class="slds-cell-wrap" >
+                    <a onclick="{!c.navigateToViewAll}" style="width:100%;">View All</a>
+                </td> 
+            </table>
+        </aura:if>
+    </lightning:card>
+</aura:component>
